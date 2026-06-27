@@ -1,0 +1,13 @@
+pandas==2.3.3
+numpy==2.4.1
+matplotlib==3.10.8
+seaborn
+scikit-learn==1.8.0
+scipy==1.17.0
+statsmodels
+tensorflow==2.20.0
+keras==3.13.1
+yfinance==1.0
+pytrends==4.9.2
+fredapi==0.5.2
+requests==2.32.5
