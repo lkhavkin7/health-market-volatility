@@ -17,17 +17,17 @@ The core question: was the data already telling the story before anyone was list
 ## Key Findings — EDA Phase
 
 - Health signals show near-zero correlation with sector volatility during normal conditions
-- During COVID-19, correlations jumped from ~0 to 0.88 (shortness-of-breath search trends vs. XLV volatility)
+- During COVID-19, correlations jumped from -0.02 to 0.92 (shortness-of-breath search trends vs. XLV volatility)
 - Rolling 52-week correlation confirms the health-volatility relationship activates only during novel crisis events, not routine flu seasons
 - This pattern holds consistently across all four sector ETFs tested (XLV, XBI, PJP, KIE) — the relationship is crisis-driven, not sector-specific
-- Google searches for "shortness of breath" show a 0.302 correlation with volatility one week later — the strongest lagged signal found
+- Google searches for "shortness of breath" show a 0.317 correlation with volatility one week later — the strongest lagged signal found
 - 14.9% of weeks qualify as volatility spikes (1.5x historical mean threshold) — the binary classification target used in modeling
 
 ## Key Findings — Modeling Phase
 
 Four independent model architectures were built and evaluated: a binary spike classifier, a two-stage ARIMA+Random Forest model, an LSTM, and a 52-week rolling-correlation regime detector.
 
-Across the spike classifier, ARIMA+Random Forest, and LSTM (evaluated two ways), every honestly-evaluated out-of-sample result is at or below the performance of simply predicting the mean (spike classifier ROC-AUC = 0.43; ARIMA+RF R² = −0.0755; LSTM full-test R² = −0.14; LSTM COVID-only R² = −0.4766). This convergence across three model families with different mechanisms and assumptions is the central finding: **lagged public-health signals do not carry exploitable out-of-sample predictive power for healthcare-sector volatility, even during the novel COVID shock.** Additional model capacity did not help — the LSTM, the most expressive architecture tested, performed no better than simpler models, indicating the limiting factor is an absence of predictive signal in pre-crisis data, not insufficient model complexity.
+Across the spike classifier, ARIMA+Random Forest, and LSTM (evaluated two ways), every honestly-evaluated out-of-sample result is at or below baseline. For the two regression models, that baseline is R² = 0 (predicting the mean): ARIMA+RF scores R² = −0.27 on the full-period split and R² = −0.14 on the COVID-blind split; the LSTM scores R² = −1.18 full-period and R² = −1.34 COVID-blind. For the spike classifier, the relevant baseline is chance-level classification (ROC-AUC = 0.5): the genuinely blind COVID-period test scores ROC-AUC = 0.53 — no better than a coin flip. This convergence across three model families with different mechanisms and assumptions is the central finding: **lagged public-health signals do not carry exploitable out-of-sample predictive power for healthcare-sector volatility, even during the novel COVID shock.** Additional model capacity did not help — the LSTM, the most expressive architecture tested, performed no better than simpler models, indicating the limiting factor is an absence of predictive signal in pre-crisis data, not insufficient model complexity.
 
 The one result that does hold up is detection rather than prediction: the regime detector identified the COVID-driven shift in the health-volatility relationship with zero false positives across 14 years of data — confirming the relationship is real and measurable, but only after it has begun, not before.
 
@@ -70,7 +70,7 @@ health-market-volatility/
 
 │   ├── eda.ipynb
 
-│   ├── arima_random_forest.ipynb # Stage 1+2 model, leakage-corrected
+│   ├── arima-forest.ipynb        # Stage 1+2 model, leakage-corrected
 
 │   ├── lstm.ipynb                # LSTM, leakage-corrected, two eval splits
 
@@ -80,8 +80,14 @@ health-market-volatility/
 
 │   └── plots/                    # All saved figures (plot1–plot20+)
 
+├── src/
 
-All modeling and analysis currently live in the notebooks above; a `src/` package refactor is planned post-capstone and intentionally not represented here until it exists.
+│   ├── features/                 # Saved feature matrices (X, y) per model
+
+│   └── models/                   # Saved fitted models (.pkl / .keras)
+
+
+All modeling and analysis logic lives in the notebooks above; `src/` holds saved artifacts (fitted models and feature matrices) exported from those notebooks so they're inspectable and reusable without re-running everything. A full `src/` package refactor — extracting the modeling code itself into reusable modules — remains a separate, larger task for post-capstone.
 
 ---
 
@@ -93,9 +99,10 @@ All modeling and analysis currently live in the notebooks above; a `src/` packag
 - [x] Feature engineering (lag features)
 - [x] Volatility spike classifier (Random Forest)
 - [x] ARIMA + Random Forest residual model (leakage identified and corrected)
-- [x] LSTM model (leakage identified and corrected; timestep-1 architecture disclosed)
+- [x] LSTM model (leakage identified and corrected; restructured to a true (4, 8) multi-step sequence architecture)
 - [x] Regime detection model
-- [ ] `src/` package refactor (post-capstone)
+- [x] `src/` artifacts saved (trained models + feature sets)
+- [ ] `src/` full package refactor (code extraction, still open)
 - [ ] AWS deployment (post-capstone)
 
 ---
